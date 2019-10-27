@@ -25,15 +25,17 @@ import java.util.Arrays;
 // add new function
 
 /**
- * makeTokinizerModel()     - generate tokinizer model for split sentance on words
  * makeDataTrainingModel()  - generate POS model for detect category
+ * sentDetect()             - sentence detector
+ * tokenize()               - tokinizer for split sentance on words
+ * makeDataTrainingModel()  -
  *
  * @edit by alexeytitovwork, BlackPoint LLC
  * @last modyfy by alexeytitovwork 13.02.2017
  * alexeytitovwork@mail.com
  * @author Alex Titov
  * @update Alex Titov 29/09/2017
- * @since 0.1.0 added 11/12/16
+ * @since 0.1.0 added tokinizer 11/12/16
  * @since 0.0.1 created 27/06/2017
  */
 
@@ -47,28 +49,21 @@ import java.util.Arrays;
 /**
  * Data model generator based on gen_data.txt
  */
-public class modelGenerator {
-    private String textContainer;
-
+public class NLPClassifier {
     private final SentenceDetector sentenceDetector;
     private final InputStream inSentenceStream;
     private final SentenceModel sentenceModel;
-
     private final Tokenizer tokenizer;
     private final InputStream inTokenStream;
     private final TokenizerModel tokenModel;
-
     private final InputStream inPosStream;
     private final POSModel posModel;
     private final POSTaggerME posTagger;
     private double[] probs;
-
-
     private POSModel model;             //postagger model
-    public TokenizerModel modelT;       //tokinizer model
     private InputStream inputStream;
 
-    public modelGenerator() throws IOException {
+    public NLPClassifier() throws IOException {
 
         URL url = getClass().getClassLoader().getResource("en-sent.bin");
         inSentenceStream = url.openStream();
@@ -80,10 +75,8 @@ public class modelGenerator {
         tokenModel = new TokenizerModel(inTokenStream);
         inTokenStream.close();
         tokenizer = new TokenizerME(tokenModel); // New tokinizer maximum estimation
-        // TODO change model for correct recognition
 
-
-        inPosStream = getClass().getClassLoader().getResourceAsStream("gen_POS_model.dat");
+        inPosStream = getClass().getClassLoader().getResourceAsStream("en-pos.dat");
 
         posModel = new POSModel(inPosStream);
         inPosStream.close();
@@ -99,7 +92,9 @@ public class modelGenerator {
         InputStream dataIn = null;
         try {
             String currentDir = new File("").getAbsolutePath();
-            dataIn = new FileInputStream(currentDir + "\\src\\main\\resources\\gen_data.txt");  //training data
+            dataIn = new FileInputStream(currentDir + "//src//main//resources//en-pos.txt");  //training data
+//            dataIn =getClass().getClassLoader().getResourceAsStream("en-pos.txt");  //training data
+
             ObjectStream<String> lineStream = new PlainTextByLineStream((InputStreamFactory) dataIn, "UTF-8");
             ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 
@@ -125,7 +120,7 @@ public class modelGenerator {
         OutputStream modelOut = null;
         try {
             String currentDir = new File("").getAbsolutePath();
-            modelOut = new BufferedOutputStream(new FileOutputStream(currentDir + "//src//main//resources//gen_POS_model.dat"));
+            modelOut = new BufferedOutputStream(new FileOutputStream(currentDir + "//src//main//resources//example-bad-model.dat"));
 
 
             model.serialize(modelOut);
@@ -143,105 +138,46 @@ public class modelGenerator {
                 }
             }
         }
-        System.out.println("Success generate and write model...");
+        System.out.println("Model generated and treated successfully...");
     }
 
 
     public String[] sentenceDetect(String message) {
-        //println "-> Nimbler: NlpService: sentence detect";
+
+        System.out.println("-> OpenNLP: sentence detector");
         return sentenceDetector.sentDetect(message);
     }
 
     public String[] tokenize(String message) {
-        System.out.println("-> Nimbler: NlpService: tokenize");
 
+        System.out.println("-> OpenNLP: token detector");
         return tokenizer.tokenize(message);
     }
 
     public String[] tag(String[] message) {
-        System.out.println("-> Nimbler: NlpService: tagging");
+
+        System.out.println("-> OpenNLP: tag detector");
         String[] tags = posTagger.tag(message);
         probs = posTagger.probs();
-        //probs =  (float*)posTagger.probs();
-
-        //tags.each {tag->println tag}
-
         return tags;
     }
 
     public double[] viewProb() {
 
-        System.out.println("-> Nimbler: NlpService: probability");
-        //print  after first tagging
-
+        System.out.println("-> OpenNLP: probability");
         return this.probs;
     }
 
 
-    public Sequence[] topKSequences(String[] message){
+    public Sequence[] topKSequences(String[] message) {
 
-        System.out.println( "-> Nimbler: NlpService: topKSequences");
-        //print  after first tagging
-
+        System.out.println("-> OpenNLP: topKSequences");
         Sequence sequences[] = posTagger.topKSequences(message);
         for (Sequence sequence : sequences) {
             System.out.println(sequence);
         }
         return sequences;
     }
-
-    public ArrayList textAnalisis(String inputdata) {
-
-
-        System.out.println("-> Nimbler: RestController: current message:\n " + inputdata);
-        /**
-         * Detector of sentence and divide text on independent sentence.
-         */
-        String[] sentences = sentenceDetect(inputdata);
-        System.out.println(Arrays.toString(sentences));
-        /**
-         * Split sentence on words and numbers(tokens)
-         */
-        String[] tokens = tokenize(inputdata);
-        System.out.println(Arrays.toString(tokens));
-        /**
-         * Classyfy all tokens by category (POS - tagger).
-         * Set tag to any token.
-         */
-        String[] tags = tag(tokens);
-        System.out.println("Detected tag:\n");
-        System.out.println(Arrays.toString(tags));
-
-        double[] probsCurr = viewProb();
-        System.out.println(Arrays.toString(probs));
-
-        System.out.println("ProbThresholdFilter start...");
-        /**
-         * Deleted all duplicate category with small probability.
-         * This method get only one maxProb category.
-         * Method delete all objects smaller than TH.
-         */
-        double TH = 0.5; //bots ->boots
-        System.out.println(Arrays.toString(tags));
-        /**
-         * If the probability of detecting a category is low,
-         * choose the most likely one from the list
-         */
-
-        ArrayList containerResult = new ArrayList();
-
-        for (int i = 0; i < tokens.length; i++) {
-            containerResult.add(tokens[i]);
-            containerResult.add(tags[i]);
-        }
-
-
-        System.out.println("Most probability phrase, get first phrase if" + "\nprob > " + TH + " ...");
-        Sequence tagTree[] = topKSequences(tokens);
-
-        return containerResult;
-    }
-
 
 }
 

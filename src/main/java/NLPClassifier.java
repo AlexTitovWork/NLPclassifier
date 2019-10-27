@@ -89,11 +89,18 @@ public class NLPClassifier {
 
         model = null;
         System.out.println("POS model started");
-        InputStream dataIn = null;
+//        InputStream dataIn = null;
+        InputStreamFactory dataIn = null;
         try {
-            String currentDir = new File("").getAbsolutePath();
-            dataIn = new FileInputStream(currentDir + "//src//main//resources//en-pos.txt");  //training data
-//            dataIn =getClass().getClassLoader().getResourceAsStream("en-pos.txt");  //training data
+             final String currentDir = new File("").getAbsolutePath();
+             dataIn = new InputStreamFactory() {
+                public InputStream createInputStream() throws IOException {
+                    return new FileInputStream(currentDir + "//src//main//resources//en-pos.txt");
+                }
+            };
+
+
+
 
             ObjectStream<String> lineStream = new PlainTextByLineStream((InputStreamFactory) dataIn, "UTF-8");
             ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
@@ -104,14 +111,8 @@ public class NLPClassifier {
             e.printStackTrace();
         } finally {
             if (dataIn != null) {
-                try {
-                    dataIn.close();
-                } catch (IOException e) {
-                    // Not an issue, training already finished.
-                    // The exception should be logged and investigated
-                    // if part of a production system.
-                    e.printStackTrace();
-                }
+                //                    dataIn.close();
+                System.out.println("InputStreamFactory not create!");
             }
         }
         System.out.println("POS model done...");

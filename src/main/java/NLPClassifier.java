@@ -99,9 +99,6 @@ public class NLPClassifier {
                 }
             };
 
-
-
-
             ObjectStream<String> lineStream = new PlainTextByLineStream((InputStreamFactory) dataIn, "UTF-8");
             ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 

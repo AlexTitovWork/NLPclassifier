@@ -72,21 +72,17 @@ public class modelGenerator {
 
         URL url = getClass().getClassLoader().getResource("en-sent.bin");
         inSentenceStream = url.openStream();
-//			inSentenceStream = this.class.getResourceAsStream("/resources/en-sent.bin");
         sentenceModel = new SentenceModel(inSentenceStream);
         inSentenceStream.close();
         sentenceDetector = new SentenceDetectorME(sentenceModel);
 //
-        //println "-> Nimbler: NlpService: loading tokenizer model";
         inTokenStream = getClass().getClassLoader().getResourceAsStream("en-token.bin");
         tokenModel = new TokenizerModel(inTokenStream);
         inTokenStream.close();
-        //tokenizer = new SimpleTokenizer() 	//Old tokinizer;
         tokenizer = new TokenizerME(tokenModel); // New tokinizer maximum estimation
         // TODO change model for correct recognition
 
-        //println "-> Nimbler: NlpService: loading POS model";
-//			inPosStream = getClass().getClassLoader().getResourceAsStream("ru-buy-model.bin");
+
         inPosStream = getClass().getClassLoader().getResourceAsStream("gen_POS_model.dat");
 
         posModel = new POSModel(inPosStream);

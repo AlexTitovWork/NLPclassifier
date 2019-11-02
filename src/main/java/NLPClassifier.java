@@ -92,12 +92,22 @@ public class NLPClassifier {
 //        InputStream dataIn = null;
         InputStreamFactory dataIn = null;
         try {
-             final String currentDir = new File("").getAbsolutePath();
+//             final String currentDir = new File("").getAbsolutePath();
+//             dataIn = new InputStreamFactory() {
+//                public InputStream createInputStream() throws IOException {
+//                    return getClass().getClassLoader().getResourceAsStream("en-pos.txt");
+//                }
+//            };
+
+
              dataIn = new InputStreamFactory() {
+
                 public InputStream createInputStream() throws IOException {
-                    return new FileInputStream(currentDir + "//src//main//resources//en-pos.txt");
+                    return NLPClassifier.class.getResourceAsStream("en-pos.txt");
                 }
             };
+
+
 
             ObjectStream<String> lineStream = new PlainTextByLineStream((InputStreamFactory) dataIn, "UTF-8");
             ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);

@@ -19,8 +19,6 @@ import opennlp.tools.util.*;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 // add new function
 
@@ -86,28 +84,18 @@ public class NLPClassifier {
 
 
     public void makeDataTrainingModel() {
-
         model = null;
         System.out.println("POS model started");
 //        InputStream dataIn = null;
         InputStreamFactory dataIn = null;
         try {
-//             final String currentDir = new File("").getAbsolutePath();
-//             dataIn = new InputStreamFactory() {
-//                public InputStream createInputStream() throws IOException {
-//                    return getClass().getClassLoader().getResourceAsStream("en-pos.txt");
-//                }
-//            };
-
-
-             dataIn = new InputStreamFactory() {
-
+            dataIn = new InputStreamFactory() {
                 public InputStream createInputStream() throws IOException {
-                    return NLPClassifier.class.getResourceAsStream("en-pos.txt");
+//                    return NLPClassifier.class.getResourceAsStream("/home/interceptor/src/main/resources/en-pos.txt");
+                     return NLPClassifier.class.getResourceAsStream("en-pos.txt");
+
                 }
             };
-
-
 
             ObjectStream<String> lineStream = new PlainTextByLineStream((InputStreamFactory) dataIn, "UTF-8");
             ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);

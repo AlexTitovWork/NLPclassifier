@@ -83,7 +83,7 @@ public class NLPClassifier {
     }
 
 
-    public void makeDataTrainingModel() {
+    public void makeDataTrainingModel() throws FileNotFoundException{
         model = null;
         System.out.println("POS model started");
 //        InputStream dataIn = null;
@@ -92,7 +92,7 @@ public class NLPClassifier {
             dataIn = new InputStreamFactory() {
                 public InputStream createInputStream() throws IOException {
 //                    return NLPClassifier.class.getResourceAsStream("/home/interceptor/src/main/resources/en-pos.txt");
-                     return NLPClassifier.class.getResourceAsStream("en-pos.txt");
+                     return getClass().getClassLoader().getResourceAsStream("en-pos.txt");
 
                 }
             };
@@ -100,7 +100,10 @@ public class NLPClassifier {
             ObjectStream<String> lineStream = new PlainTextByLineStream((InputStreamFactory) dataIn, "UTF-8");
             ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 
-            model = POSTaggerME.train("en", sampleStream, TrainingParameters.defaultParams(), null);
+            /**
+             *  Factory must not be a null. Add getFactory()
+             */
+            model = POSTaggerME.train("en", sampleStream, TrainingParameters.defaultParams(), posModel.getFactory());
         } catch (IOException e) {
             // Failed to read or parse training data, training failed
             e.printStackTrace();
@@ -117,8 +120,6 @@ public class NLPClassifier {
         try {
             String currentDir = new File("").getAbsolutePath();
             modelOut = new BufferedOutputStream(new FileOutputStream(currentDir + "//src//main//resources//example-bad-model.dat"));
-
-
             model.serialize(modelOut);
         } catch (IOException e) {
             // Failed to save model
